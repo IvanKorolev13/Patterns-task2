@@ -18,11 +18,11 @@ public class DataGenerator {
 
     public static String generateRandomSymbols(int countSymbols) {
         String symbols = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&*-+0123456789";
-        String result = "";
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < countSymbols; i++){
-            result = result + symbols.charAt(random.nextInt(symbols.length()));
+            result.append(symbols.charAt(random.nextInt(symbols.length())));
         }
-        return result;
+        return result.toString();
     }
     public static String generateLogin(String locale) {
         return generateFirstName(locale) + generateLastName(locale);
@@ -57,31 +57,38 @@ public class DataGenerator {
 
         char[] charArray = new char[lengthIs8AndMore - 4];
 
-        for(int i = 0; i < 3; i++){
+        //first two symbols are any letters
+        for(int i = 0; i < 2; i++){
             password.append(allLetters.charAt(random.nextInt(allLetters.length())));
         }
-        for(int i = 3; i < 5; i++){
+
+        //next two symbols are lower letters
+        for(int i = 2; i < 4; i++){
             password.append(lowerLetters.charAt(random.nextInt(lowerLetters.length())));
         }
 
+        //must have a spec symbol, a digit and an upper letter
         charArray[0] = specChars.charAt(random.nextInt(specChars.length()));
         charArray[1] = digitChars.charAt(random.nextInt(digitChars.length()));
         charArray[2] = upperLetters.charAt(random.nextInt(upperLetters.length()));
 
+        //everything else is filled with any symbols
         for(int i = 3; i < charArray.length; i++){
             charArray[i] = allChars.charAt(random.nextInt(allChars.length()));
         }
-        int count = 0;
-        while (count < lengthIs8AndMore - 4) {
-            int numberInCharArray = random.nextInt(charArray.length);
-            password.append(charArray[numberInCharArray]);
-            count++;
+
+        //mixing the element in the charArray
+        for (int i = 0; i < lengthIs8AndMore - 4; i++) {
+            int numberOfRandomSymbolInCharArray = random.nextInt(charArray.length);
+            password.append(charArray[numberOfRandomSymbolInCharArray]);
             char[] tempForDeleteUsedChar = new char[charArray.length - 1];
-            int newNumberInCharArray = 0;
-            for(int i = 0; i < charArray.length; i++){
-                if(i != numberInCharArray){
-                    tempForDeleteUsedChar[newNumberInCharArray] = charArray[i];
-                    newNumberInCharArray++;
+            int numberInTemp = 0;
+
+            //delete used element from the charArray
+            for(int j = 0; j < charArray.length; j++){
+                if(j != numberOfRandomSymbolInCharArray){
+                    tempForDeleteUsedChar[numberInTemp] = charArray[j];
+                    numberInTemp++;
                 }
             }
             charArray = tempForDeleteUsedChar;
