@@ -2,10 +2,6 @@ package ru.netology;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,18 +9,17 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 
 import static com.codeborne.selenide.Selenide.*;
-import static io.restassured.RestAssured.given;
 import static ru.netology.DataGenerator.*;
 
 class PatternsTask2Test {
     private static final RegistrationDto activeUser = new RegistrationDto(
             generateLogin("en"),
-            generatePassword(generateIntInRange(8, 15)),
+            generatePassword(),
             "active");
 
     private static final RegistrationDto blockedUser = new RegistrationDto(
             generateLogin("en"),
-            generatePassword(generateIntInRange(8, 15)),
+            generatePassword(),
             "blocked");
 
     SelenideElement loginInput = $("input[name=login]");
@@ -40,41 +35,16 @@ class PatternsTask2Test {
     String blockedUserMassage = "Пользователь заблокирован";
     String emptyFieldMassage = "Поле обязательно для заполнения";
 
-
-
-    // спецификация нужна для того, чтобы переиспользовать настройки в разных запросах
-    private static RequestSpecification requestSpec = new RequestSpecBuilder()
-            .setBaseUri("http://localhost")
-            .setPort(9999)
-            .setAccept(ContentType.JSON)
-            .setContentType(ContentType.JSON)
-            .log(LogDetail.ALL)
-            .build();
-
     @BeforeAll
     static void setUpAll() {
-        given()
-                .spec(requestSpec) // указываем, какую спецификацию используем
-                .body(activeUser) // передаём в теле объект, который будет преобразован в JSON
-                .when()
-                .post("/api/system/users") // на какой путь относительно BaseUri отправляем запрос
-                .then()
-                .statusCode(200);
-
-        given()
-                .spec(requestSpec) // указываем, какую спецификацию используем
-                .body(blockedUser) // передаём в теле объект, который будет преобразован в JSON
-                .when()
-                .post("/api/system/users") // на какой путь относительно BaseUri отправляем запрос
-                .then()
-                .statusCode(200);
+        setUser(activeUser);
+        setUser(blockedUser);
     }
 
     @BeforeEach
     void setup() {
         open("http://localhost:9999");
     }
-
 
     @Test
     public void testValidDataForRegistratedUser() {
@@ -115,7 +85,7 @@ class PatternsTask2Test {
     @Test
     public void testInvalidPasswordForRegistratedUser() {
         loginInput.setValue(activeUser.getLogin());
-        passwordInput.setValue(activeUser.getPassword() + generateRandomSymbols(generateIntInRange(1,5)));
+        passwordInput.setValue(activeUser.getPassword() + generateRandomSymbols());
         continueButton.click();
 
         errorPopUp
@@ -137,7 +107,7 @@ class PatternsTask2Test {
     @Test
     public void testInvalidPasswordForBlockedUser() {
         loginInput.setValue(blockedUser.getLogin());
-        passwordInput.setValue(blockedUser.getPassword() + generateRandomSymbols(2));
+        passwordInput.setValue(blockedUser.getPassword() + generateRandomSymbols());
         continueButton.click();
 
         errorPopUp
@@ -148,7 +118,6 @@ class PatternsTask2Test {
     @Test
     public void testValidLoginEmptyPasswordForRegistratedUser() {
         loginInput.setValue(activeUser.getLogin());
-
         continueButton.click();
 
         passwordErrorField
@@ -158,7 +127,6 @@ class PatternsTask2Test {
 
     @Test
     public void testEmptyLoginValidPasswordForRegistratedUser() {
-
         passwordInput.setValue(activeUser.getPassword());
         continueButton.click();
 
@@ -169,7 +137,6 @@ class PatternsTask2Test {
 
     @Test
     public void testEmptyForm() {
-
         continueButton.click();
 
         loginErrorField
